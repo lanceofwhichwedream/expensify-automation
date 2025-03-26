@@ -1,0 +1,28 @@
+---
+
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Create Log Directory
+  file:
+    path: /var/log/nginx/default/
+    state: directory
+    owner: www-data
+    group: adm
+
+- name: Copy Nginx Config
+  copy:
+    src: default.conf
+    dest: /etc/nginx/sites-enabled/default.conf
+    owner: www-data
+    group: adm
+
+- name: Copy Index.html
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: www-data
+    group: adm
+    
