@@ -1,0 +1,8 @@
+---
+- name: Configure Nginx to loadbalance between webservers
+  hosts: loadbalancer
+  remote_user: ubuntu
+  become: true
+
+  roles:
+    - loadbalancer

@@ -4,6 +4,14 @@
 [b]
 35.87.105.161
 
+[loadbalancer]
+34.219.221.50
+
 [webservers:children]
 a
 b
+
+[ubuntu:children]
+a
+b
+loadbalancer

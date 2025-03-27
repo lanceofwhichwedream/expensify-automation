@@ -1,0 +1,55 @@
+---
+  
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Create Log Directory
+  file:
+    path: /var/log/nginx/default/
+    state: directory
+    owner: www-data
+    group: adm
+
+- name: Debug Ip Addresses
+  debug:
+    msg: These are the IPs in use {{ item }}
+  loop: "{{ groups['webservers'] }}"
+
+- name: Copy Nginx Service Unit
+  copy:
+    src: nginx.service
+    dest: /lib/systemd/system/nginx.service
+    owner: root
+    group: root
+    mode: '0544'
+  notify: 
+    - Restart Nginx
+    - Systemd Reload
+
+- name: Copy Nginx Service Config
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0544'
+  notify: Restart Nginx
+
+- name: Remove Unneeded Default Config
+  file:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/nginx/sites-enabled/default
+    - /etc/nginx/sites-available/default
+  notify: Restart Nginx
+
+- name: Copy Nginx Site Config
+  template:
+    src: default.conf.j2
+    dest: /etc/nginx/sites-enabled/default.conf
+    owner: www-data
+    group: adm
+  notify: Restart Nginx

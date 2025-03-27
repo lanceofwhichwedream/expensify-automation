@@ -12,12 +12,22 @@
     owner: www-data
     group: adm
 
+- name: Remove Unneeded Default Config
+  file:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/nginx/sites-enabled/default
+    - /etc/nginx/sites-available/default
+  notify: Restart Nginx
+
 - name: Copy Nginx Config
   copy:
     src: default.conf
     dest: /etc/nginx/sites-enabled/default.conf
     owner: www-data
     group: adm
+  notify: Restart Nginx
 
 - name: Copy Index.html
   template:
@@ -25,4 +35,4 @@
     dest: /var/www/html/index.html
     owner: www-data
     group: adm
-    
+  notify: Restart Nginx 
