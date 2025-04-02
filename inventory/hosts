@@ -7,6 +7,9 @@
 [loadbalancer]
 34.219.221.50
 
+[nagios]
+52.27.42.131
+
 [webservers:children]
 a
 b
@@ -15,3 +18,4 @@ b
 a
 b
 loadbalancer
+nagios

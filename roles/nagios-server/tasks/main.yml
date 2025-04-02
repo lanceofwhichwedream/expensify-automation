@@ -1,0 +1,89 @@
+---
+- name: Install Dependency Packages for Nagios
+  apt:
+    state: present
+    pkg:
+     - autoconf
+     - bc
+     - gawk
+     - dc
+     - build-essential
+     - gcc
+     - libc6
+     - wget
+     - unzip
+     - apache2
+     - php
+     - libapache2-mod-php
+     - libgd-dev
+     - libmcrypt-dev
+     - make
+     - libssl-dev
+     - snmp
+     - libnet-snmp-perl
+     - gettext
+     - python3-passlib
+
+- name: Get and Untar Nagios
+  unarchive:
+    src: "https://github.com/NagiosEnterprises/nagioscore/releases/download/nagios-{{ nagios_version }}/nagios-{{ nagios_version }}.tar.gz"
+    dest: /tmp
+    remote_src: yes
+
+- name: Run Configure
+  command: ./configure --with-httpd-conf=/etc/apache2/sites-enabled
+  args:
+    chdir: "/tmp/nagios-{{ nagios_version }}"
+
+- name: Run Make All
+  make:
+    chdir: "/tmp/nagios-{{ nagios_version }}"
+    target: all
+
+- name: Run Make Install Groups Users
+  make:
+    chdir: "/tmp/nagios-{{ nagios_version }}"
+    target: install-groups-users
+
+- name: Add Nagios User to www-data
+  user:
+    name: nagios
+    groups: www-data
+    append: yes
+  notify: 
+    - Restart Apache
+    - Restart Nagios
+
+- name: Run Make Install
+  make:
+    chdir: "/tmp/nagios-{{ nagios_version }}"
+    target: "{{ item }}"
+  loop:
+    - install
+    - install-daemoninit
+    - install-commandmode
+    - install-config
+    - install-webconf
+  notify: 
+    - Restart Apache
+    - Restart Nagios
+
+- name: Enable Apache Mods
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  loop:
+    - rewrite
+    - cgi
+  notify: 
+    - Restart Apache
+    - Restart Nagios
+
+- name: Set htpasswd
+  htpasswd:
+    path: /usr/local/nagios/etc/htpasswd.users
+    name: nagiosadmin
+    password: "{{ nagios_password }}"
+  notify: 
+    - Restart Apache
+    - Restart Nagios
