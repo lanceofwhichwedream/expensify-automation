@@ -15,4 +15,4 @@
   become: true
 
   roles:
-    - nagios-clients
+    - nrpe-clients
