@@ -1,0 +1,16 @@
+---
+- name: Install Dependency Packages for Nagios Plugins
+  apt:
+    state: present
+    pkg:
+      - nagios-nrpe-server
+      - nagios-plugins-contrib
+
+- name: Copy Custom.cfg Template
+  template:
+    src: custom-nrpe.cfg.j2
+    dest: /etc/nagios/nrpe.d/custom-nrpe.cfg
+    owner: root
+    group: root
+    mode: '0544'
+  notify: Restart NRPE Server

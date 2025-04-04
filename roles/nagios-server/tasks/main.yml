@@ -87,3 +87,10 @@
   notify: 
     - Restart Apache
     - Restart Nagios
+
+- name: Install NRPE Plugin
+  apt:
+    state: present
+    pkg: 
+      - nagios-nrpe-plugin
+      - nagios-plugins-contrib

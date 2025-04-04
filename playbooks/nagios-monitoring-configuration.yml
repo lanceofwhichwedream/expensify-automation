@@ -6,3 +6,13 @@
 
   roles:
     - nagios-server
+
+- name: Install NRPE on Remote Servers
+  hosts: 
+    - webservers
+    - loadbalancer
+  remote_user: ubuntu
+  become: true
+
+  roles:
+    - nagios-clients
