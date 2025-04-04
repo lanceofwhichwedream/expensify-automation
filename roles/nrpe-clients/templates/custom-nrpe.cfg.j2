@@ -1,1 +1,3 @@
-allowed_hosts={{ groups['nagios'] }}
+{% for element in groups['nagios'] %}
+allowed_hosts={{ element }}
+{% endfor %}
