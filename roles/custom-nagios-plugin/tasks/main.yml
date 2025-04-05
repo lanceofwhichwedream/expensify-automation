@@ -1,0 +1,17 @@
+---
+
+- name: Copy Webhost Inventory file
+  template:
+    src: webhosts.txt.j2
+    dest:
+    owner:
+    group:
+    mode: '0444'
+
+- name: Copy Custom Plugin Script
+  copy:
+    src: webserver-check.py
+    dest: 
+    owner:
+    group:
+    mode: 

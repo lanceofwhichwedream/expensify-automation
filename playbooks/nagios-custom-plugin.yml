@@ -1,0 +1,8 @@
+---
+- name: Deploy Nagios Custom Plugin
+  hosts: nagios
+  remote_user: ubuntu
+  become: true
+
+  roles:
+    - custom-nagios-plugin
