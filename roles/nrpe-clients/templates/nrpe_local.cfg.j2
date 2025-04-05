@@ -1,0 +1,5 @@
+command[check_root]=/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /
+command[check_ping]=/usr/lib/nagios/plugins/check_ping -H {{ ansible_default_ipv4.address }} -w 100.0,20% -c 500.0,60% -p 5
+command[check_ssh]=/usr/lib/nagios/plugins/check_ssh -4 {{ ansible_default_ipv4.address }}
+command[check_http]=/usr/lib/nagios/plugins/check_http -I {{ ansible_default_ipv4.address }}
+command[check_apt]=/usr/lib/nagios/plugins/check_apt

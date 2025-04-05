@@ -94,3 +94,42 @@
     pkg: 
       - nagios-nrpe-plugin
       - nagios-plugins-contrib
+      - monitoring-plugins
+
+- name: Create Directory
+  file:
+    state: directory
+    owner: nagios
+    group: nagios
+    mode: '0775'
+    path: /usr/local/nagios/etc/servers
+
+- name: Copy Edited Nagios Config
+  copy:
+    src: nagios.cfg
+    dest: /usr/local/nagios/etc/nagios.cfg
+    owner: nagios
+    group: nagios
+    mode: '0664'
+  notify: 
+    - Restart Nagios
+
+- name: Copy Edited Resource Config
+  copy:
+    src: resource.cfg
+    dest: /usr/local/nagios/etc/resource.cfg
+    owner: nagios
+    group: nagios
+    mode: '0660'
+  notify: 
+    - Restart Nagios
+
+- name: Copy Edited Commands Config
+  copy:
+    src: commands.cfg
+    dest: /usr/local/nagios/etc/objects/commands.cfg
+    owner: nagios
+    group: nagios
+    mode: '0664'
+  notify: 
+    - Restart Nagios

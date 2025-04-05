@@ -5,11 +5,21 @@
     pkg:
       - nagios-nrpe-server
       - nagios-plugins-contrib
+      - monitoring-plugins
 
 - name: Copy Custom.cfg Template
   template:
     src: custom-nrpe.cfg.j2
     dest: /etc/nagios/nrpe.d/custom-nrpe.cfg
+    owner: root
+    group: root
+    mode: '0544'
+  notify: Restart NRPE Server
+
+- name: Copy nrpe_local.cfg Template
+  template:
+    src: nrpe_local.cfg.j2
+    dest: /etc/nagios/nrpe_local.cfg
     owner: root
     group: root
     mode: '0544'
