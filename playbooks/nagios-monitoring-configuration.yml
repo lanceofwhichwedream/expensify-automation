@@ -1,21 +1,21 @@
 ---
-#- name: Configure Nagios to monitor all servers
-#  hosts: nagios
-#  remote_user: ubuntu
-#  become: true
-#
-#  roles:
-#    - nagios-server
-#
-#- name: Install NRPE on Remote Servers
-#  hosts: 
-#    - webservers
-#    - loadbalancer
-#  remote_user: ubuntu
-#  become: true
-#
-#  roles:
-#    - nrpe-clients
+- name: Configure Nagios to monitor all servers
+  hosts: nagios
+  remote_user: ubuntu
+  become: true
+
+  roles:
+    - nagios-server
+
+- name: Install NRPE on Remote Servers
+  hosts: 
+    - webservers
+    - loadbalancer
+  remote_user: ubuntu
+  become: true
+
+  roles:
+    - nrpe-clients
 
 - name: Push out the Client Configs
   hosts: nagios
