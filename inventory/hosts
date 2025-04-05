@@ -14,6 +14,10 @@
 a
 b
 
+[monitorred_group:children]
+webservers
+loadbalancer
+
 [ubuntu:children]
 a
 b

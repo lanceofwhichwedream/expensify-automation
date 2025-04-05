@@ -1,0 +1,11 @@
+---
+
+- name: Copy Client Configs
+  template:
+    src: client.cfg.j2
+    dest: '/usr/local/nagios/etc/servers/{{ item }}.cfg'
+    owner: nagios
+    group: nagios
+    mode: '0664'
+  loop: "{{ groups['monitorred_group'] }}"
+  notify: Restart Nagios
