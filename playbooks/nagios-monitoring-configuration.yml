@@ -5,7 +5,12 @@
   become: true
 
   roles:
-    - nagios-server
+    - role: nagios-server
+      tags:
+        - Nag-Server
+    - role: custom-nagios-plugin
+      tags:
+        - Nag-Server
 
 - name: Install NRPE on Remote Servers
   hosts: 
@@ -15,7 +20,9 @@
   become: true
 
   roles:
-    - nrpe-clients
+    - role: nrpe-clients
+      tags:
+        - Nag-Clients
 
 - name: Push out the Client Configs
   hosts: nagios
@@ -23,4 +30,6 @@
   become: true
 
   roles:
-    - nagios-client-config
+    - role: nagios-client-config
+      tags:
+        - Nag-Server

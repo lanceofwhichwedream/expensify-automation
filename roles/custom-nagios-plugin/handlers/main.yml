@@ -1,0 +1,9 @@
+- name: Restart Logrotate.d
+  service:
+    name: logrotate
+    state: restarted
+
+- name: Restart Nagios
+  service:
+    name: nagios
+    state: restarted

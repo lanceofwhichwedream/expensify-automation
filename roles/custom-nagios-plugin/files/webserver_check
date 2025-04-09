@@ -1,0 +1,7 @@
+/var/log/nagios-plugin/webserver_check.log {
+  rotate 12
+  monthly
+  compress
+  missingok
+  notifempty
+}
