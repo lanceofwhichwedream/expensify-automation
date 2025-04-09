@@ -1,17 +1,50 @@
 ---
+- name: Apt Install Python3 Requests
+  apt:
+    pkg: python3-requests
+    state: present
+
+- name: Create Webhosts and Log Directory
+  file:
+    state: directory
+    owner: root
+    group: nagios
+    mode: '0755'
+    path: "{{ item }}"
+  loop:
+    - /etc/nagios-plugin
+    - /var/log/nagios-plugin
+
+- name: Create Log File
+  file:
+    state: touch
+    owner: nagios
+    group: nagios
+    mode: '0766'
+    path: /var/log/nagios-plugin/webserver_check.log
 
 - name: Copy Webhost Inventory file
   template:
     src: webhosts.txt.j2
-    dest:
-    owner:
-    group:
-    mode: '0444'
+    dest: /etc/nagios-plugin/webhosts.txt
+    owner: root
+    group: root
+    mode: '0664'
 
 - name: Copy Custom Plugin Script
   copy:
-    src: webserver-check.py
-    dest: 
-    owner:
-    group:
-    mode: 
+    src: webserver_check.py
+    dest: /usr/lib/nagios/plugins/webserver_check.py
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy Logrotate Config For Plugin
+  copy:
+    src: webserver_check
+    dest: /etc/logrotate.d/webserver_check
+    owner: root
+    group: root
+    mode: '0544'
+  notify:
+    - Restart Logrotate.d

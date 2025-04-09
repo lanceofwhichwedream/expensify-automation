@@ -88,6 +88,9 @@
     - Restart Apache
     - Restart Nagios
 
+- name: Set Permissions for Nagios RW Directory
+  command: chmod ugo+rw /usr/local/nagios/var/rw/ /usr/local/nagios/var/rw/nagios.cmd
+
 - name: Install NRPE Plugin
   apt:
     state: present
@@ -126,10 +129,13 @@
 
 - name: Copy Edited Commands Config
   copy:
-    src: commands.cfg
-    dest: /usr/local/nagios/etc/objects/commands.cfg
+    src: "{{ item }}"
+    dest: "/usr/local/nagios/etc/objects/{{ item }}"
     owner: nagios
     group: nagios
     mode: '0664'
+  loop:
+    - commands.cfg
+    - localhost.cfg
   notify: 
     - Restart Nagios
