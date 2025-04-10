@@ -1,0 +1,9 @@
+---
+
+- name: Configure Users
+  hosts: ubuntu
+  remote_user: ubuntu
+  become: true
+
+  roles:
+    - role: base-configuration

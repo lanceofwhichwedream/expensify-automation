@@ -18,6 +18,9 @@ b
 webservers
 loadbalancer
 
+[monitorred_group:vars]
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@52.27.42.131"'
+
 [ubuntu:children]
 a
 b
