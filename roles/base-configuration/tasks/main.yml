@@ -24,15 +24,46 @@
     group: expensify
     mode: 0600
 
+- name: Debugging SSH From_ip
+  debug:
+    msg: "We will allow ssh from {{ groups['nagios'] }}"
+
 - name: Setting SSH Allow Rule
   ufw:
-    rule: accept
+    rule: allow
     port: ssh
     proto: tcp
-    from_ip: "{{ item }}"
-  loop: groups['nagios']
+    from_ip: "{{ groups['nagios'] }}"
   when: "'monitorred_group' in group_names"
 
+- name: Setting HTTP Allow Rule
+  ufw:
+    rule: allow
+    port: http
+    proto: tcp
+  when: ("'webservers' in group_names") or ("'nagios' in group_names")
+
+- name: Setting Port Range Allow Rule
+  ufw:
+    rule: allow
+    port: 60000:65000
+    proto: tcp
+  when: "'loadbalancer' in group_names"
+
+- name: Setting Public SSH Allow Rule
+  ufw:
+    rule: allow
+    port: ssh
+    proto: tcp
+    from_ip: any
+  when: "'nagios' in group_names"
+
+# Pause to Validate Allow rules are good
+- name: Rule Validate
+  ansible.builtin.pause:
+    prompt: "Validate allow rules are set properly"
+
+# Deny Rules
 - name: Setting SSH Deny any rule
   ufw:
     rule: reject
@@ -41,31 +72,14 @@
     insert: 997
   when: "'monitorred_group' in group_names"
 
-- name: Setting HTTP Allow Rule
-  ufw:
-    rule: accept
-    port: http
-    proto: tcp
-  when: ("'webservers' in group_names") or ("'nagios' in group_names")
-
-- name: Setting Port Range Allow Rule
-  ufw:
-    rule: accept
-    port: 60000:65000
-    proto: tcp
-  when: "'loadbalancer' in group_names"
-
-- name: Setting Public SSH Allow Rule
-  ufw:
-    rule: accept
-    port: ssh
-    proto: tcp
-    from_ip: any
-  when: "'nagios' in group_names"
-
 - name: Deny Everything Else
   ufw:
     rule: deny
     port: any
     proto: any
     from_ip: any
+
+# Pause to Validate Deny rules are good
+- name: Rule Validate
+  ansible.builtin.pause:
+    prompt: "Validate deny rules are set properly"
