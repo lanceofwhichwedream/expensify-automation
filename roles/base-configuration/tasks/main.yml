@@ -1,5 +1,9 @@
 ---
 
+- name: Enable UFW
+  ufw:
+    state: disable
+
 - name: Create Expensify User
   user:
     name: expensify
@@ -14,7 +18,7 @@
     path: /home/expensify/.ssh
     owner: expensify
     group: expensify
-    mode: 0755 
+    mode: 0700 
 
 - name: Copy Authorized Keys file
   copy:
@@ -26,29 +30,38 @@
 
 - name: Debugging SSH From_ip
   debug:
-    msg: "We will allow ssh from {{ groups['nagios'] }}"
+    msg: "We will allow ssh from {{ groups['nagios'][0] }}"
 
 - name: Setting SSH Allow Rule
   ufw:
     rule: allow
     port: ssh
     proto: tcp
-    from_ip: "{{ groups['nagios'] }}"
+    from_ip: "{{ groups['nagios'][0] }}"
+    insert_relative_to: first-ipv4
   when: "'monitorred_group' in group_names"
+  notify:
+    - Enable UFW
 
 - name: Setting HTTP Allow Rule
   ufw:
     rule: allow
     port: http
     proto: tcp
+    insert_relative_to: first-ipv4
   when: ("'webservers' in group_names") or ("'nagios' in group_names")
+  notify:
+    - Enable UFW
 
 - name: Setting Port Range Allow Rule
   ufw:
     rule: allow
     port: 60000:65000
     proto: tcp
+    insert_relative_to: first-ipv4
   when: "'loadbalancer' in group_names"
+  notify:
+    - Enable UFW
 
 - name: Setting Public SSH Allow Rule
   ufw:
@@ -56,7 +69,10 @@
     port: ssh
     proto: tcp
     from_ip: any
+    insert_relative_to: first-ipv4
   when: "'nagios' in group_names"
+  notify:
+    - Enable UFW
 
 # Pause to Validate Allow rules are good
 - name: Rule Validate
@@ -69,15 +85,10 @@
     rule: reject
     port: ssh
     proto: tcp
-    insert: 997
+    insert_relative_to: last-ipv4
   when: "'monitorred_group' in group_names"
-
-- name: Deny Everything Else
-  ufw:
-    rule: deny
-    port: any
-    proto: any
-    from_ip: any
+  notify:
+    - Enable UFW
 
 # Pause to Validate Deny rules are good
 - name: Rule Validate
