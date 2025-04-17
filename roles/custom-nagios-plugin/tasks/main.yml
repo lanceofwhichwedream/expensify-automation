@@ -3,6 +3,8 @@
   apt:
     pkg: python3-requests
     state: present
+    update_cache: yes
+
 
 - name: Create Webhosts and Log Directory
   file:

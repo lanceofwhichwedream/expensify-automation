@@ -2,6 +2,7 @@
 - name: Install Dependency Packages for Nagios
   apt:
     state: present
+    update_cache: yes
     pkg:
      - autoconf
      - bc

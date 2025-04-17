@@ -4,6 +4,7 @@
   apt:
     name: nginx
     state: present
+    update_cache: yes
 
 - name: Create Log Directory
   file:
