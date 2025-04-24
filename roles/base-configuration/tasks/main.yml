@@ -94,3 +94,10 @@
 - name: Rule Validate
   ansible.builtin.pause:
     prompt: "Validate deny rules are set properly"
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+  tags:
+    - never
+    - enable-firewall

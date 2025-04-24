@@ -2,13 +2,13 @@
 52.11.201.248
 
 [b]
-35.87.105.161
-
-[loadbalancer]
 54.245.12.202
 
+[loadbalancer]
+44.244.140.175
+
 [nagios]
-52.27.42.131
+35.87.105.161
 
 [webservers:children]
 a
@@ -19,7 +19,7 @@ webservers
 loadbalancer
 
 [monitorred_group:vars]
-ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@52.27.42.131"'
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@35.87.105.161"'
 
 [ubuntu:children]
 a
