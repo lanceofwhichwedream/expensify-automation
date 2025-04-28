@@ -40,8 +40,6 @@
     from_ip: "{{ groups['nagios'][0] }}"
     insert_relative_to: first-ipv4
   when: "'monitorred_group' in group_names"
-  notify:
-    - Enable UFW
 
 - name: Setting HTTP Allow Rule
   ufw:
@@ -50,8 +48,6 @@
     proto: tcp
     insert_relative_to: first-ipv4
   when: ("'webservers' in group_names") or ("'nagios' in group_names")
-  notify:
-    - Enable UFW
 
 - name: Setting Port Range Allow Rule
   ufw:
@@ -60,8 +56,6 @@
     proto: tcp
     insert_relative_to: first-ipv4
   when: "'loadbalancer' in group_names"
-  notify:
-    - Enable UFW
 
 - name: Setting Public SSH Allow Rule
   ufw:
@@ -71,8 +65,6 @@
     from_ip: any
     insert_relative_to: first-ipv4
   when: "'nagios' in group_names"
-  notify:
-    - Enable UFW
 
 # Pause to Validate Allow rules are good
 - name: Rule Validate
@@ -87,8 +79,6 @@
     proto: tcp
     insert_relative_to: last-ipv4
   when: "'monitorred_group' in group_names"
-  notify:
-    - Enable UFW
 
 # Pause to Validate Deny rules are good
 - name: Rule Validate
