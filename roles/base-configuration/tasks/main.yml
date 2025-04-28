@@ -1,8 +1,9 @@
 ---
 
-- name: Enable UFW
+# This is done as a safety step to allow time to validate rules before enabling the firewall
+- name: Disable UFW
   ufw:
-    state: disable
+    state: disabled
 
 - name: Create Expensify User
   user:
