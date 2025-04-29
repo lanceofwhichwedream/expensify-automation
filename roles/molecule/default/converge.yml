@@ -1,0 +1,14 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Include tasks from Base Configuration Role
+      ansible.builtin.include_role: 
+        name: base-configuration
+
+    - name: Sample task  # noqa command-instead-of-shell
+      ansible.builtin.shell:
+        cmd: uname
+      changed_when: false

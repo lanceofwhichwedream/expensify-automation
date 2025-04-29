@@ -1,0 +1,89 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Check For expensify user
+      getent:
+        database: passwd
+        key: expensify
+
+    - name: Check for Authorized Keys File
+      stat:
+        path: /home/expensify/.ssh/authorized_keys
+      register: stat_result
+
+    - name: Debug stat reulst
+      debug:
+        var: stat_result
+
+    - name: Assert Authorized Keys file exists
+      assert:
+        that: 
+          - stat_result.stat.exists
+
+    - name: Check for SSH Allow Rule in monitorred_group
+      lineinfile:
+        path: /etc/ufw/user.rules
+        line: "-A ufw-user-input -p tcp --dport 22 -s {{ groups['nagios'][0] }} -j ACCEPT"
+        state: present
+      check_mode: yes
+      register: ssh_presence
+      failed_when: ssh_presence is changed
+      when: "'monitorred_group' in group_names"
+
+    - name: Check for HTTP Allow Rule in Webservers and Nagios groups
+      lineinfile:
+        path: /etc/ufw/user.rules
+        line: "-A ufw-user-input -p tcp --dport 80 -j ACCEPT"
+        state: present
+      check_mode: yes
+      register: http_presence
+      failed_when: http_presence is changed
+      when: ("'webservers' in group_names") or ("'nagios' in group_names")
+
+    - name: Check for Port Range Allow Rule
+      lineinfile:
+        path: /etc/ufw/user.rules
+        line: "-A ufw-user-input -p tcp -m multiport --dports 60000:65000 -j ACCEPT"
+        state: present
+      check_mode: yes
+      register: range_presence
+      failed_when: range_presence is changed
+      when: "'loadbalancer' in group_names"
+
+    - name: Check for Global SSH Allow Rule
+      lineinfile:
+        path: /etc/ufw/user.rules
+        line: "-A ufw-user-input -p tcp --dport 22 -j ACCEPT"
+        state: present
+      check_mode: yes
+      register: global_ssh_presence
+      failed_when: global_ssh_presence is changed
+      when: "'nagios' in group_names"
+
+    - name: Check for Global SSH Deny Rule
+      lineinfile:
+        path: /etc/ufw/user.rules
+        line: "-A ufw-user-input -p tcp --dport 22 -j REJECT --reject-with tcp-reset"
+        state: present
+      check_mode: yes
+      register: deny_ssh_presence
+      failed_when: deny_ssh_presence is changed
+      when: "'monitorred_group' in group_names"
+    
+    - name: Debug Allow SSH rule
+      debug:
+        var: ssh_presence
+    
+    - name: Get Line Number of Allow SSH rule
+      raw: (( $(cat -n /etc/ufw/user.rules | grep 'ufw-user-input -p tcp --dport 22 -s {{ groups['nagios'][0] }} -j ACCEPT' | awk '{print $1}') < $(cat -n /etc/ufw/user.rules | grep 'ufw-user-input -p tcp --dport 22 -j REJECT --reject-with tcp-reset' | awk '{print $1}') ))
+      args:
+        executable: /bin/bash
+      register: allow_line
+      when: "'monitorred_group' in group_names"
+
+    - name: Debug Allow Line
+      debug:
+        var: allow_line

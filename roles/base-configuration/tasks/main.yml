@@ -1,0 +1,104 @@
+---
+
+# This is done as a safety step to allow time to validate rules before enabling the firewall
+- name: Disable UFW
+  ufw:
+    state: disabled
+
+- name: Create Expensify User
+  user:
+    name: expensify
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+    create_home: yes
+
+- name: Create .ssh directory
+  file:
+    state: directory
+    path: /home/expensify/.ssh
+    owner: expensify
+    group: expensify
+    mode: 0700 
+
+- name: Copy Authorized Keys file
+  copy:
+    src: infra_team_authorized_keys
+    dest: /home/expensify/.ssh/authorized_keys
+    owner: expensify
+    group: expensify
+    mode: 0600
+
+- name: Debugging SSH From_ip
+  debug:
+    msg: "We will allow ssh from {{ groups['nagios'][0] }}"
+
+- name: Setting SSH Allow Rule
+  ufw:
+    rule: allow
+    port: ssh
+    proto: tcp
+    from_ip: "{{ groups['nagios'][0] }}"
+    insert_relative_to: first-ipv4
+  when: "'monitorred_group' in group_names"
+  tags:
+    - add-rules
+
+- name: Setting HTTP Allow Rule
+  ufw:
+    rule: allow
+    port: http
+    proto: tcp
+    insert_relative_to: first-ipv4
+  when: ("'webservers' in group_names") or ("'nagios' in group_names")
+  tags:
+    - add-rules
+
+- name: Setting Port Range Allow Rule
+  ufw:
+    rule: allow
+    port: 60000:65000
+    proto: tcp
+    insert_relative_to: first-ipv4
+  when: "'loadbalancer' in group_names"
+  tags:
+    - add-rules
+
+- name: Setting Public SSH Allow Rule
+  ufw:
+    rule: allow
+    port: ssh
+    proto: tcp
+    from_ip: any
+    insert_relative_to: first-ipv4
+  when: "'nagios' in group_names"
+  tags:
+    - add-rules
+
+# Pause to Validate Allow rules are good
+- name: Rule Validate
+  ansible.builtin.pause:
+    prompt: "Validate allow rules are set properly"
+
+# Deny Rules
+- name: Setting SSH Deny any rule
+  ufw:
+    rule: reject
+    port: ssh
+    proto: tcp
+    insert_relative_to: last-ipv4
+  when: "'monitorred_group' in group_names"
+  tags:
+    - add-rules
+
+# Pause to Validate Deny rules are good
+- name: Rule Validate
+  ansible.builtin.pause:
+    prompt: "Validate deny rules are set properly"
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+  tags:
+    - never
+    - enable-firewall

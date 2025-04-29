@@ -1,0 +1,45 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+provisioner:
+  name: ansible
+  env:    
+    ANSIBLE_ROLES_PATH: "../../"
+platforms:
+  - hostname: 35.95.108.99
+    name: 35.95.108.99
+    box: bento/ubuntu-24.04
+    memory: 512
+    cpus: 1
+    groups:
+      - nagios
+  - hostname: 44.244.140.175
+    name: 44.244.140.175
+    box: bento/ubuntu-24.04
+    memory: 512
+    cpus: 1
+    groups:
+      - monitorred_group
+      - loadbalancer
+  - hostname: 52.11.201.248
+    name: 52.11.201.248
+    box: bento/ubuntu-24.04
+    memory: 512
+    cpus: 1
+    groups:
+      - monitorred_group
+      - webservers
+      - a
+  - hostname: 54.245.12.202
+    name: 54.245.12.202
+    box: bento/ubuntu-24.04
+    memory: 512
+    cpus: 1
+    groups:
+      - monitorred_group
+      - webservers
+      - b

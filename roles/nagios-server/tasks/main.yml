@@ -2,6 +2,7 @@
 - name: Install Dependency Packages for Nagios
   apt:
     state: present
+    update_cache: yes
     pkg:
      - autoconf
      - bc
@@ -89,7 +90,7 @@
     - Restart Nagios
 
 - name: Set Permissions for Nagios RW Directory
-  command: chmod ugo+rw /usr/local/nagios/var/rw/ /usr/local/nagios/var/rw/nagios.cmd
+  command: chmod ugo+rw /usr/local/nagios/var/rw/
 
 - name: Install NRPE Plugin
   apt:

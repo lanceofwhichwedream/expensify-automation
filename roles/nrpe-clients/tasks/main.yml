@@ -6,6 +6,8 @@
       - nagios-nrpe-server
       - nagios-plugins-contrib
       - monitoring-plugins
+    update_cache: yes
+
 
 - name: Copy Custom.cfg Template
   template:
