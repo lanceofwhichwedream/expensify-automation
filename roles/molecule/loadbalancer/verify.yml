@@ -1,0 +1,82 @@
+---
+- name: Verify
+  hosts: loadbalancer
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Check For Nginx installation
+      apt:
+        name: nginx
+        state: present
+      check_mode: yes
+    
+    - name: Check for Log Directory
+      file:
+        path: /var/log/nginx/default/
+        state: directory
+        owner: www-data
+        group: adm
+      check_mode: yes
+    
+    - name: Verify Default Config doesn't exist
+      file:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/nginx/sites-enabled/default
+        - /etc/nginx/sites-available/default
+      check_mode: yes
+
+    - name: Check for Custom Config
+      file:
+        path: /etc/nginx/sites-enabled/default.conf
+        owner: www-data
+        group: adm
+      check_mode: yes
+
+    - name: Check for Custom Nginx Service Unit
+      lineinfile:
+        path: /lib/systemd/system/nginx.service
+        line: "LimitNOFILE=500000"
+        state: present
+      check_mode: yes
+
+    - name: Check for Worker Connections in Nginx Conf
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        line: "        worker_connections 5500;"
+        state: present
+      check_mode: yes
+    
+    - name: Check for A and B in Site Config
+      lineinfile:
+        path: /etc/nginx/sites-enabled/default.conf
+        line: "    server {{ item }};"
+        state: present
+      check_mode: yes
+      loop: "{{ groups['webservers'] }}"
+    
+    - name: Check for our listen range
+      lineinfile:
+        path: /etc/nginx/sites-enabled/default.conf
+        line: "    listen 60000-65000;"
+        state: present
+      check_mode: yes
+
+    - name: Check for our proxy pass lines
+      lineinfile:
+        path: /etc/nginx/sites-enabled/default.conf
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      loop:
+        - "        proxy_pass http://nginx-backend;"
+        - "        proxy_set_header Host $http_host;"
+        - "        proxy_set_header X-Real-IP $remote_addr;"
+        - "        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+        - "        proxy_set_header X-Forwarded-Proto $scheme;"
+    
+    - name: Verify Nginx is Running
+      uri:
+        url: http://localhost:60001
+        status_code: 200
