@@ -1,0 +1,33 @@
+---
+- name: Converge
+  hosts: nagios
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Include tasks from Nagios-Server Role
+      ansible.builtin.include_role: 
+        name: nagios-server
+    
+    - name: Include tasks from 
+      ansible.builtin.include_role: 
+        name: custom-nagios-plugin
+
+- name: Converge pt2
+  hosts:
+    - webservers
+    - loadbalancer
+  gather_facts: false
+  become: true
+  tasks: 
+    - name: Include tasks from Nagios-Server Role
+      ansible.builtin.include_role: 
+        name: nrpe-clients
+
+- name: Converge pt3
+  hosts: nagios
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Include tasks from Nagios-Server Role
+      ansible.builtin.include_role: 
+        name: nagios-client-config

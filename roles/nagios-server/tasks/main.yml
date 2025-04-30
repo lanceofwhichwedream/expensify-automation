@@ -100,7 +100,7 @@
       - nagios-plugins-contrib
       - monitoring-plugins
 
-- name: Create Directory
+- name: Create Servers Directory
   file:
     state: directory
     owner: nagios

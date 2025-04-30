@@ -1,0 +1,9 @@
+---
+- name: Converge
+  hosts: webservers
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Include tasks from Webserver Role
+      ansible.builtin.include_role:
+        name: webserver
