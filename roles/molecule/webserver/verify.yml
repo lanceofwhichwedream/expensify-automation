@@ -1,0 +1,67 @@
+---
+- name: Verify
+  hosts: webservers
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Check For Nginx installation
+      apt:
+        name: nginx
+        state: present
+      check_mode: yes
+    
+    - name: Check for Log Directory
+      file:
+        path: /var/log/nginx/default/
+        state: directory
+        owner: www-data
+        group: adm
+      check_mode: yes
+    
+    - name: Verify Default Config doesn't exist
+      file:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/nginx/sites-enabled/default
+        - /etc/nginx/sites-available/default
+      check_mode: yes
+
+    - name: Check for Custom Config
+      file:
+        path: /etc/nginx/sites-enabled/default.conf
+        owner: www-data
+        group: adm
+      check_mode: yes
+
+    - name: Check for Index.html
+      file:
+        path: /var/www/html/index.html
+        owner: www-data
+        group: adm
+      check_mode: yes
+
+    - name: Validate Contents of Index.html For A
+      lineinfile:
+        path: /var/www/html/index.html
+        line: "    <h1>A</h1>"
+        state: present
+      check_mode: yes
+      register: a_presence
+      failed_when: a_presence is changed
+      when: "'a' in group_names"
+
+    - name: Validate Contents of Index.html For B
+      lineinfile:
+        path: /var/www/html/index.html
+        line: "    <h1>B</h1>"
+        state: present
+      check_mode: yes
+      register: b_presence
+      failed_when: b_presence is changed
+      when: "'b' in group_names"
+    
+    - name: Verify Nginx is Running
+      uri:
+        url: http://localhost
+        status_code: 200
