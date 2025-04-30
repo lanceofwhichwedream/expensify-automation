@@ -1,0 +1,177 @@
+---
+- name: Verify
+  hosts: nagios
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Verify Dependencies are present
+      apt:
+        state: present
+        pkg:
+          - autoconf
+          - bc
+          - gawk
+          - dc
+          - build-essential
+          - gcc
+          - libc6
+          - wget
+          - unzip
+          - apache2
+          - php
+          - libapache2-mod-php
+          - libgd-dev
+          - libmcrypt-dev
+          - make
+          - libssl-dev
+          - snmp
+          - libnet-snmp-perl
+          - gettext
+          - python3-passlib
+      check_mode: yes
+    
+    - name: Check That Nagios has been Untarred
+      file:
+        state: directory
+        path: "/tmp/nagios-{{ nagios_version }}"
+      check_mode: yes
+    
+    - name: Check for Nagios User
+      getent:
+        database: passwd
+        key: nagios
+
+    - name: Check that Nagios Dir Was Installed successfully
+      file:
+        state: directory
+        path: "/usr/local/nagios/"
+      check_mode: yes
+
+    - name: Check that Nagios Dir was Populated
+      file:
+        state: file
+        path: "/usr/local/nagios/bin/nagios"
+      check_mode: yes
+
+    - name: Check that Nagios and Apache are Running
+      uri:
+        url: "{{ item }}"
+        status_code: 200
+      loop:
+        - http://localhost
+        - "http://nagiosadmin:{{ nagios_password }}@localhost/nagios"
+      
+    - name: Verify Nagios RW Directory Permissions
+      file:
+        path: /usr/local/nagios/var/rw
+        mode: u+rw,g+rw,o+rw
+        state: directory
+      check_mode: yes
+    
+    - name: Install NRPE Plugin
+      apt:
+        state: present
+        pkg: 
+          - nagios-nrpe-plugin
+          - nagios-plugins-contrib
+          - monitoring-plugins
+      check_mode: yes
+
+    - name: Verify Servers Directory
+      file:
+        state: directory
+        owner: nagios
+        group: nagios
+        mode: '0775'
+        path: /usr/local/nagios/etc/servers
+      check_mode: yes
+    
+    - name: Check for USER1 line in Resource file
+      lineinfile:
+        path: /usr/local/nagios/etc/resource.cfg
+        line: "$USER1$=/usr/lib/nagios/plugins"
+        state: present
+      check_mode: yes
+    
+    - name: Check for Servers Dir line in Nagios CFG file
+      lineinfile:
+        path: /usr/local/nagios/etc/nagios.cfg
+        line: "cfg_dir=/usr/local/nagios/etc/servers"
+        state: present
+      check_mode: yes
+    
+    - name: Check for Custom Script and NRPE line in Commands file
+      lineinfile:
+        path: /usr/local/nagios/etc/objects/commands.cfg
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      loop:
+        - "    command_line    $USER1$/webserver_check.py"
+        - "        command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c $ARG1$"
+    
+    - name: Check for Custom Script line in localhost.cfg file
+      lineinfile:
+        path: /usr/local/nagios/etc/objects/localhost.cfg
+        line: "    check_command           check_webservers"
+        state: present
+      check_mode: yes
+
+- name: Verify pt2
+  hosts:
+    - webservers
+    - loadbalancer
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Verify Dependency Installation
+      apt:
+        state: present
+        pkg:
+          - nagios-nrpe-server
+          - nagios-plugins-contrib
+          - monitoring-plugins
+      check_mode: yes
+
+    - name: Check for Config files
+      file:
+        path: "{{ item }}"
+        owner: root
+        group: root
+        mode: '0544'
+      loop:
+        - /etc/nagios/nrpe.d/custom-nrpe.cfg
+        - /etc/nagios/nrpe_local.cfg
+      
+    - name: Validate contents of Custom-nrpe.cfg
+      lineinfile:
+        path: /etc/nagios/nrpe.d/custom-nrpe.cfg
+        line: "allowed_hosts=127.0.0.1,{{ groups['nagios'][0] }}"
+        state: present
+      check_mode: yes
+
+    - name: Validate contents of nrpe_local.cfg
+      lineinfile:
+        path: /etc/nagios/nrpe_local.cfg
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      loop:
+        - "command[check_root]=/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /"
+        - "command[check_ping]=/usr/lib/nagios/plugins/check_ping -H {{ ansible_default_ipv4.address }} -w 100.0,20% -c 500.0,60% -p 5"
+        - "command[check_ssh]=/usr/lib/nagios/plugins/check_ssh -4 {{ ansible_default_ipv4.address }}"
+        - "command[check_http]=/usr/lib/nagios/plugins/check_http -I {{ ansible_default_ipv4.address }}"
+        - "command[check_apt]=/usr/lib/nagios/plugins/check_apt"
+
+- name: Verify pt3
+  hosts: nagios
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Validate Contents of Client Configs
+      lineinfile:
+        path: "/usr/local/nagios/etc/servers/{{ item }}.cfg"
+        line: "        host_name                    {{ item }}"
+        state: present
+      check_mode: yes
+      loop: "{{ groups['monitorred_group'] }}"
