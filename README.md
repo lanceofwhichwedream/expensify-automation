@@ -5,9 +5,11 @@ This codebase is designed to be the automation counterpart for the Expensify Tec
 - nginx-webserver-configuration.yml
 - nginx-loadbalancer-configuration.yml
 - nagios-monitoring-configuration.yml *
-- user-network-configuration.yml
+- user-network-configuration.yml **
 
 * - The Nagios Monitoring Configuration uses the Nagios Server role. This role has a dependency on an ansible vaulted variable. The Vault Key can be provided upon request separately from the codebase.
+
+** - The User Network Configuration role by default will not enable UFW during it's executation. This is done intentionally to allow an engineer to review the enabled firewall rules. To enable and start the UFW service after reviewing the firewall rules, simply run the playbook with the enable-firewall tag.
 
 List of Collections installed at the time of playbook executations
 Collection                               Version
